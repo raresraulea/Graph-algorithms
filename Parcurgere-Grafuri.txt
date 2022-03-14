@@ -1,0 +1,78 @@
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <queue>
+#define NMAX 101
+
+using namespace std;
+
+ifstream fin("Text.txt");
+
+int N; //number of nodes
+bool visited[NMAX];
+int T[NMAX];
+
+void readGraph(vector<int> lad[NMAX])
+{
+    fin >> N;
+    int node1, node2;
+    while (fin >> node1 >> node2)
+    {
+        lad[node1].push_back(node2);
+    }
+}
+void DFS(vector <int> lad[NMAX], int startNode)
+{
+    visited[startNode] = true;
+    for (auto node : lad[startNode])
+    {
+        if (!visited[node])
+        {
+            cout << node << ' ';
+            T[node] = startNode;
+            DFS(lad, node);
+        }
+    }
+}
+void BFS(vector <int> lad[NMAX], int startNode)
+{
+    visited[startNode] = true;
+    queue<int> q;
+    q.push(startNode);
+
+    while (!q.empty())
+    {
+        int nod_curent = q.front();
+        q.pop();
+        visited[nod_curent] = true;
+        cout << nod_curent << ' ';
+
+        for (auto node : lad[nod_curent])
+        {
+            if (!visited[node])
+            {
+                T[node] = nod_curent;
+                visited[node] = true;
+                q.push(node);
+            }
+
+        }
+    }
+}
+void wayBack(int endNode)
+{
+    while (T[endNode])
+    {
+        cout << endNode << ' ';
+        endNode = T[endNode];
+    }
+}
+int main()
+{
+    vector <int> lad[NMAX];
+    readGraph(lad);
+    DFS(lad, 0);
+    cout << endl;
+   //wayBack(4);
+}

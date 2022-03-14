@@ -1,0 +1,71 @@
+
+#include <iostream>
+#include <fstream>
+#include <queue>
+#include <vector>
+
+#define NMAX 50005
+#define oo 2000000000
+
+using namespace std;
+
+ifstream fin("dijkstra.in");
+ofstream fout("dijkstra.out");
+
+int N, M;
+
+void getGraph(vector <pair<int,int>> lad[NMAX])
+{
+    fin >> N >> M;
+    int x, y, c;
+    while (fin >> x >> y >> c)
+    {
+        lad[x].push_back(make_pair(c,y));
+    }
+}
+void Dijkstra(vector <pair<int, int>> lad[NMAX], int startNode)
+{
+    //priority_queue de perechi cu semnificatia first = cost, second = nod
+    //=> in varf va tine mereu nodul de cost minim => poate fi gasit in timp constant
+    priority_queue < pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> coada;
+
+    //vectorul de distante
+    vector<int> d(N + 1, oo);
+
+    //vectorul de vizite 
+    vector<bool> viz(N+1, false);
+    d[startNode] = 0;
+    coada.push(make_pair(0, startNode));
+
+    while (!coada.empty())
+    {
+        int nod_curent = coada.top().second;
+    
+        coada.pop();
+        viz[nod_curent] = true;
+        for (vector<pair<int, int>>::iterator it = lad[nod_curent].begin(); it != lad[nod_curent].end(); it++)
+        {
+            
+            int vecin_curent = (*it).second;
+            int cost_catre_vecin = (*it).first;
+
+            //daca nodul vecin actual nu a fost vizitat si exista drum mai scurt din nodul curent 
+            //decat drumul cunoscut pana acum
+            if (!viz[vecin_curent] && d[vecin_curent] > d[nod_curent] + cost_catre_vecin)
+            {
+                d[vecin_curent] = d[nod_curent] + cost_catre_vecin;
+                coada.push(make_pair(d[vecin_curent], vecin_curent));
+            }
+        }
+    }
+    for (auto i = 2; i <=N; i++)
+        fout << d[i] << ' ';
+}
+
+int main()
+{
+    vector <pair<int, int>> lad[NMAX];
+    getGraph(lad);
+    Dijkstra(lad, 1);
+}
+

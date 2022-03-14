@@ -1,0 +1,71 @@
+
+
+#include <iostream>
+#include <algorithm>
+#include <stack>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+int N, M;
+
+ifstream fin("Text.txt");
+
+vector<int>* readGraph()
+{
+    fin >> N >> M;
+    vector<int>* lad = new vector<int>[N + 1];
+    int x, y;
+    for (int muchie = 1; muchie <= M; muchie++)
+    {
+        fin >> x >> y;
+        lad[x].push_back(y);
+    }
+    return lad;
+}
+void afisLAD(vector<int>* lad)
+{
+    for (int i = 1; i <= N; i++)
+    {
+        cout << i << ": ";
+        for (auto nod_vecin : lad[i])
+            cout << nod_vecin << ' ';
+        cout << endl;
+    }
+}
+void DFSUtil(bool* visited, vector<int>* lad, int nod, stack <int> &stack)
+{
+    visited[nod] = true;
+    for (auto nod_vecin : lad[nod])
+        if (!visited[nod_vecin])
+            DFSUtil(visited, lad, nod_vecin, stack);
+    stack.push(nod);
+}
+vector<int> T_sort(vector<int>* lad)
+{
+    bool* visited = new bool[N + 1];
+    for (int nod = 1; nod <= N; nod++)
+        visited[nod] = false;
+
+    stack <int> stack;
+
+    for (int nod = 1; nod <= N; nod++)
+        if (!visited[nod])
+            DFSUtil(visited, lad, nod, stack);
+
+    vector<int> T_sort;
+    while (!stack.empty())
+        T_sort.push_back(stack.top()), stack.pop();
+
+    return T_sort;
+}
+
+int main()
+{
+    vector<int>* lad = readGraph();
+    /*afisLAD(lad);*/
+    vector<int> Tsort = T_sort(lad);
+    for (auto x : Tsort) cout << x << ' ';
+}
+

@@ -1,0 +1,50 @@
+#include <iostream>
+#include <algorithm>
+#include <vector>
+
+#define NMAX 101
+
+using namespace std;
+
+ifstream fin("Text.txt");
+
+int n, m, k;
+
+void read(vector <pair<int,int>> &muchii,vector <int>& lant)
+{
+	fin >> n >> m >> k;
+	for (int i = 0; i < m; i++)
+	{
+		int x, y;
+		fin >> x >> y;
+
+		muchii.emplace_back(x, y);
+		muchii.emplace_back(y, x);
+	}
+	for (int i = 0; i < k; i++)
+	{
+		int x;
+		fin >> x;
+		lant.push_back(x);
+	}
+}
+bool esteLant(vector <pair<int, int>>& muchii, vector <int>& lant)
+{
+	sort(muchii.begin(), muchii.end());
+	
+	for (auto x : muchii)
+		cout << x.first << " " << x.second << endl;
+	for (int i = 0; i < lant.size() - 1; i++)
+	{
+		if (!binary_search(muchii.begin(), muchii.end(), make_pair(lant[i], lant[i + 1])))
+			return false;
+	}
+	return true;
+}
+int main()
+{
+	vector <int> lant;
+	vector <pair<int, int>> muchii;
+	read(muchii, lant);
+	cout << esteLant(muchii, lant);
+}

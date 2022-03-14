@@ -1,0 +1,64 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+ifstream fin("Text.txt");
+
+vector<pair<int, pair<int,int>>> read(int &N)
+{
+    fin >> N;
+    vector <pair<int, pair<int, int>>> res;
+    int x, y, cost;
+    while(fin >> x >> y >> cost)
+        res.emplace_back(make_pair(cost, make_pair(x,y)));
+    return  res;
+}
+vector<pair<int, pair<int, int>>> KruskalMST(vector<pair<int, pair<int, int>>>  &muchii,  int &N)
+{
+    sort(muchii.begin(), muchii.end());
+    vector<pair<int, pair<int, int>>> MST;
+
+    int* parent = new int[N + 5]; //vectorul pentru identificarea seturilor disjuncte (subarbori)
+    for (int i = 1; i <= N; i++) //fiecare nod este initial singur in setul propriu
+        parent[i] = i;
+
+    int nrMuchii = 0; //muchii necesare = N-1
+    int totalMuchii = muchii.size();
+    for (int muchie_curenta = 0; muchie_curenta < totalMuchii; muchie_curenta++)
+    {
+        #define cost first
+        #define startNode second.first
+        #define endNode second.second
+        auto start_curent = muchii[muchie_curenta].startNode; //nod start muchie curenta
+        auto end_curent = muchii[muchie_curenta].endNode;  //nod final muchie curenta 
+        if (parent[start_curent] != parent[end_curent]) //cele dou noduri din capetele muchiei nu apartin aceluiasi set
+        {
+            MST.emplace_back(make_pair(muchii[muchie_curenta].cost,make_pair( start_curent, end_curent)));
+            nrMuchii++;
+            if (nrMuchii == N - 1) break;
+            replace(parent + 1, parent + N + 1, parent[end_curent], parent[start_curent]); 
+            //seturile celor doua noduri x,y se combina: toate nodurile care il au parinte y acum il vor avea pe x
+        }
+    }
+    return MST;
+}
+int main()
+{
+    vector<pair<int, pair<int, int>>>  muchii;
+    vector<pair<int, pair<int, int>>>  MST;
+    int N;
+    muchii = read(N);      
+      
+    MST = KruskalMST(muchii, N);
+    for (auto x : MST)
+    {
+        cout << x.second.first << ' ' << x.second.second;
+        cout << endl;
+    }
+    fin >> N;                                
+
+}
+

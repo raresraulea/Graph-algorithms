@@ -1,0 +1,80 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+# define nmax 100
+# define vecin first
+# define cost second
+#define oo 10000
+
+//typedef muchie pair<int, int>;
+
+
+//SE DA LISTA DE MUCHII !!!!! a, b, cost
+
+
+using namespace std;
+typedef pair <int, int> muchie;
+ifstream in("Text2.txt");
+int n;
+vector <muchie> lap[nmax + 1];
+int d[nmax + 1], T[nmax + 1];
+bool viz[nmax + 1];
+int a[150][150];
+
+int main()
+{
+	in >> n;
+	int nod1, nod2, costul;
+	while (in >> nod1 >> nod2 >> costul)
+	{
+		lap[nod1].push_back(make_pair(nod2, costul));
+	}
+	
+	
+	fill(viz, viz + nmax + 1, false);
+	fill(T, T + nmax + 1, -1);
+	fill(d, d + nmax + 1, oo);
+	int sursa;
+	cout << "varf sursa = "; cin >> sursa;
+	d[sursa] = T[sursa] = 0;
+	for (int k = 0; k < n - 1; k++)
+	{
+		int minim = oo; int p;
+		for (int i = 1; i <= n; i++)
+			if (d[i] < minim && viz[i] == false)
+			{
+				minim = d[i];
+				p = i; //pozitia minimului!
+			}
+		viz[p] = true;
+		for (auto x : lap[p])
+		{
+			if (d[x.vecin] > d[p] + x.cost)
+			{
+				d[x.vecin] = d[p] + x.cost;
+				T[x.vecin] = p;
+			}
+		}
+
+	}
+	cout << endl << "i: ";
+	for (int i = 1; i <= n; i++)
+	{
+		cout.width(5);
+		cout << i;
+	}
+	cout << endl << "D: ";
+	for (int i = 1; i <= n; i++)
+	{
+		cout.width(5);
+		cout << d[i];
+	}
+	cout << endl << "T: ";
+	for (int i = 1; i <= n; i++)
+	{
+		cout.width(5);
+		cout << T[i];
+	}
+	system("pause");
+}

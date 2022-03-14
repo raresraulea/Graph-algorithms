@@ -1,0 +1,95 @@
+#include <iostream>
+#include <fstream>
+#include <list>
+#include <algorithm>
+#include <vector>
+#define NMAX 101
+
+using namespace std;
+
+ifstream fin("Text.txt");
+ofstream fout("Text1.txt");
+
+int N;
+int mad[NMAX][NMAX]; //int pentru a folosi col 0 pentru gradul nodului
+void afisMAD()
+{
+    for (int i = 0; i <= N; i++)
+    {
+        for (int j = 0; j <= N; j++)
+        {
+            cout << mad[i][j] << ' ';
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+void read()
+{
+    fin >> N;
+    int x, y;
+    while (fin >> x && fin >> y)
+    {
+        mad[x][y] = mad[y][x] = 1;
+        mad[x][0]++;
+        mad[y][0]++;
+        mad[0][y]++;
+        mad[0][x]++;
+    }
+}
+
+void deleteMinDegreeNodes(vector <int> &degree)
+{
+    int min_degree = mad[0][1];
+    for (int i = 1; i <= N; i++)
+        min_degree = min(mad[0][i], min_degree);
+    
+    for (int i = 1; i <= N; i++)
+    {
+        if (mad[0][i] == min_degree)
+        {
+            //afisMAD();
+            int x = i;
+            while (x <= N)
+            {
+                for (int j = 0; j <= N; ++j)
+                {
+                    mad[j][x] = mad[j][x + 1];
+                }
+                for (int j = 0; j <= N; ++j)
+                {
+                    mad[x][j] = mad[x + 1][j];
+                }
+                x++;
+            }
+            i--;
+            N--;
+        }
+    }
+}
+int countEdges()
+{
+    int res = 0;
+    for (int i = 1; i <= N; i++)
+    {
+        for (int j = i; j <= N; j++)
+        {
+            if (mad[i][j]) res++;
+        }
+    }
+    return res;
+}
+
+
+int main()
+{
+    vector<int> degree;
+    read();
+    //afisMAD(); 
+    deleteMinDegreeNodes(degree);
+    //afisMAD();
+    //afisMAD();
+    //cout << endl;
+    fout << countEdges();
+}
+

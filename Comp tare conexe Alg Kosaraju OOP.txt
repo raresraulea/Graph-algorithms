@@ -1,0 +1,169 @@
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <fstream>
+#include <stack>
+#define NMAX 100
+
+using namespace std;
+
+ofstream fout("out.txt");
+ifstream fin("ctc.in");
+
+class Graph
+{
+    int N, M; //numarul de noduri si muchii
+    vector <int>* adj; //tablou de vectori pentru listele de adiacenta
+    vector<vector<int>> SCC;
+
+public:
+    Graph(int N); //constructor graf cu v noduri
+    void addEdge(int v, int w); //adaugare muchie
+    void MtoL(int a[NMAX][NMAX], int N);
+    void getStackWithDFS(bool* visited, stack <int>& stack, int startNode);
+    void DFScuSCC(bool* visited, int startNode, vector<int>& aux);
+    Graph getTranspose();
+    void getSCC();
+    void afisLAD();
+    void readGfromF(const string& filename);
+};
+Graph::Graph(int N)
+{
+    this->N = N;
+    adj = new vector<int>[N + 1]; // in cazul in care avem un graf fara muchii => N SCCs (fiecare nod) + 1 de siguranta
+}
+void Graph::addEdge(int v, int w)
+{
+    adj[v].push_back(w);
+}
+void Graph::afisLAD()
+{
+    for (auto nod = 1; nod <= N; nod++)
+    {
+        cout << nod << ": ";
+        for (auto x : adj[nod])
+            cout << x << ' ';
+        cout << endl;
+    }
+}
+void Graph::readGfromF(const string& filename)
+{
+    ifstream in(filename);
+    int start, end;
+    while (fin >> start >> end)
+        addEdge(start, end);
+}
+Graph Graph::getTranspose()
+{
+    Graph transpus(N);
+
+    for (int nod = 1; nod <= N; nod++)
+        for (auto vecin : adj[nod])
+            transpus.addEdge(vecin, nod);
+
+    return transpus;
+}
+void Graph::getStackWithDFS(bool* visited, stack<int>& s, int nod)
+{
+    visited[nod] = true;
+    for (auto vecin : adj[nod])
+        if (!visited[vecin])
+            getStackWithDFS(visited, s, vecin);
+    s.push(nod);
+}
+void Graph::DFScuSCC(bool* visited, int nod, vector<int>& aux)
+{
+    visited[nod] = true;
+    aux.push_back(nod);
+    for (auto vecin : adj[nod])
+        if (!visited[vecin])
+            DFScuSCC(visited, vecin, aux);
+}
+void Graph::getSCC()
+{
+    //vectorul de vizite pentru noduri
+    bool* visited = new bool[N + 1];
+    for (int i = 1; i <= N; i++)
+        visited[i] = false;
+
+    //parcurgere pentru a crea stackul cu nodurile in ordinea timpilor
+    //s.top() va contine nodul cel mai "adanc"
+    stack <int> stack;
+    for (int nod = 1; nod <= N; ++nod)
+        if (!visited[nod])
+            getStackWithDFS(visited, stack, nod);
+
+    Graph Gtranspus = getTranspose(); //graful transpus
+    vector<vector<int>> ctc; // componentele tare conexe 
+
+    //reinitializare vizite pentru al doilea DFS care are scopul crearii arrayului de vectori cu SCC
+    for (int i = 1; i <= N; i++)
+        visited[i] = false;
+
+    while (!stack.empty())
+    {
+        int nod_curent = stack.top();
+        stack.pop();
+        vector<int> aux;
+        if (!visited[nod_curent])
+        {
+            Gtranspus.DFScuSCC(visited, nod_curent, aux);
+            ctc.push_back(aux);
+        }
+    }
+    fout << ctc.size() << endl;
+    for (auto vector : ctc)
+    {
+        for (auto nod : vector)
+            fout << nod << ' ';
+        fout << endl;
+    }
+}
+void citeste_mad(int a[NMAX][NMAX], int N)
+{
+    for (int i = 1; i <= N; i++)
+    {
+        for (int j = 1; j <= N; j++)
+        {
+            fin >> a[i][j];
+        }
+    }
+    for (int i = 1; i <= N; i++)
+    {
+        for (int j = 1; j <= N; j++)
+        {
+            cout << a[i][j] << ' ';
+        }
+        cout << endl;
+    }
+}
+void Graph::MtoL(int a[NMAX][NMAX], int N)
+{
+
+    for (int i = 1; i <= N; i++)
+        for (int j = 1; j <= N; j++)
+            if (a[i][j])
+                addEdge(i, j);
+}
+int main()
+{
+    int N, M;
+    int a[NMAX][NMAX];
+
+    fin >> N >> M;
+    Graph G(N);
+    citeste_mad(a, N);
+    G.MtoL(a, N);
+    cout << endl;
+    G.afisLAD();
+    //G.readGfromF("ctc.in");
+    G.getSCC();
+}
+//ALGORITMUL KOSARAJU
+//1. PARCUGERE DFS A INTREGULUI GRAF SI INTR-O STIVA GOALA SE PUNE FIECARE NOD
+//CARE A FOST TERMINAT DE ANALIZAT
+//2. SE COSNTRUIESTE GRAFUL gT (TRANSPUS)
+//3. PANA LA GOLIREA STIVEI PRIN ELIMINARE SUCCESIVA SE FACE O PARCURGERE DFS 
+//DIN FIECARE NOD DIN VARFUL STIVEI PENTRU DETERMINAREA FIECAREI COMPONENTE 
+//TARE CONEXE

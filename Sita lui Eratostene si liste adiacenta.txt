@@ -1,0 +1,76 @@
+#include <iostream>
+#include <fstream>
+#include <list>
+#include <algorithm>
+#include <vector>
+#define NMAX 101
+
+using namespace std;
+
+ifstream fin("Text.txt");
+ofstream fout("Text1.txt");
+
+int N;
+
+int main()
+{
+    int prime[NMAX];
+    fin >> N;
+    vector <int>listaAD[NMAX];
+
+    for (int i = 2; i <= 50; i++)
+    {
+        prime[i] = 1;
+    }
+    
+    for (int i = 2; i <= N; i++)
+    {
+        if (prime[i])
+        {
+            int nr = 2*i;
+            while (nr <= N)
+            {
+                prime[nr] = 0;
+                nr += i;
+            }
+        }
+    }
+ 
+    int x, y, nrMuchii = 0;
+    while (fin >> x >> y)
+    {
+        if (!binary_search(listaAD[x].begin(), listaAD[x].end(), y))
+        {
+        listaAD[x].push_back(y);
+        listaAD[y].push_back(x);
+        nrMuchii++;
+        }      
+    }
+    for (int i = 1; i <= N; i++)
+    {
+        sort(listaAD[i].begin(), listaAD[i].end());
+    }
+    for (int i = 2; i <= N; i++)
+    {
+        if (prime[i])
+        {
+            for (auto it = listaAD[i].begin(); it != listaAD[i].end(); it++)
+            {
+                 listaAD[*it].erase(find(listaAD[*it].begin(), listaAD[*it].end(), i));
+                 nrMuchii--;
+            }
+            listaAD[i].clear();
+            
+        }
+    }
+    /*for (int i = 1; i <= N; i++)
+    {
+        cout << i << ": ";
+        for (auto it = listaAD[i].begin(); it != listaAD[i].end(); it++)
+        {
+            cout << *it << ' ';
+        }
+        cout << endl;
+    }*/
+    fout << nrMuchii;
+}

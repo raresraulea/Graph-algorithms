@@ -1,0 +1,132 @@
+
+//DETERMINAREA UNUI ARBORE PARTIAL DE COST MINIM ASOCIAT UNUI GRAF PONDERAT
+//PRIN ALGORITMUL KRUSKAL, FOLOSIND ARBORII CU RADACINA STOCATI SUB FORMA UNUI VECTORI DE TATI 
+//PENTRU REPREZENTAREA MULTIMILOR DISJUNCTE 
+
+//ETAPA 1: 
+//SE CITESTE GRAFUL, SE OBTINE LISTA DE MUCHII, N - NUMARUL DE NODURI, M - NUMARUL DE MUCHII
+//SI SE INITIALIZEAZA VECTORUL DE TATI SI VECTORUL DE INALTIMI (ALOCATI DINAMIC IN HEAP) CU 0
+//	-T[i] = 0 semnifica faptul ca i este RADACINA, pentru orice i din [1,N], adica initial fiecare nod este radacina (arbore separat)
+//	-inaltime[i] = 0 -> arbore cu un singur nod
+//
+//ETAPA 2:
+//SE SORTEAZA CRESCATOR LISTA DE MUCHII (VECTORUL DE PERECHI SAU STRUCTURI) IN FUNCTIE DE COSTUL MUCHIILOR
+//
+//ETAPA 3:
+//SE PARCURGE VECTORUL DE MUCHII SI SE SELECTEAZA IN APM MUCHIILE ALE CAROR CAPETE FAC PARTE DIN ARBORI DIFERITI (MULTIMI DISJUNCTE DIFERITE)
+//IN FELUL URMATOR:
+//    -din vectorul de tati se obtine recursiv sau iterativ radacina arborelui din care fac parte nodurile din capetele muchiei
+//	-daca aceste radacini sunt diferite, arborele de inaltime mai mica va deveni "subordonat" arborelui de inaltime mai mare
+//		-cand un arbore devine subarborele altui arbore -> se adauga o muchie in plus la arborele de inaltime mai mare, deci 
+//		 inaltimea acestuia nu va fi modificata pentru ca adaugand inaltimea arborelui mai mic + o muchie de legatura se poate 
+//		 atinge maxim inaltimea pe care arborele o avea inainte de subordonare. Dar daca inaltimile sunt egale, atunci inaltimea 
+//		 arborelui care mosteneste si celalalt arbore (ales dupa preferinta) va creste cu 1 (muchia adaugata pentru legatura)
+//		-subordonarea nu inseamna altceva decat faptul ca radacina arborelui caruia i se subordoneaza alt arbore va deveni si 
+//		 radacina arborelui subordonat
+//	-cand au fost selectate n-1 muchii -> stop, avem deja arborele cu N - 1 muchii pentru cele N noduri
+
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+int N, M;
+
+
+struct muchie
+{
+	int v1, v2, cost;
+};
+void read_file(const string& filename, vector <muchie>& lista_muchii)
+{
+	ifstream fin(filename);
+	fin >> N >> M;
+	for (int i = 1; i <= M; i++)
+	{
+		muchie muchie_aux;
+		fin >> muchie_aux.v1 >> muchie_aux.v2 >> muchie_aux.cost;
+		lista_muchii.push_back(muchie_aux);
+	}
+}
+bool custom_compare(muchie m1, muchie m2)
+{
+	return m1.cost < m2.cost;
+}
+int radacina(int nod, int* T)
+{
+	if (T[nod] == 0) return nod;
+	else return radacina(T[nod], T);
+}
+vector<muchie> Kruskal_APM(vector<muchie>& lm)
+{
+	vector <muchie> APM;
+
+	sort(lm.begin(), lm.end(), custom_compare);
+
+	//vectorii de tati si inaltimi
+	int* T, * inaltime;
+	T = new int[N + 1];
+	inaltime = new int[N + 1];
+	fill(T, T + N + 1, 0);
+	fill(inaltime, inaltime + N + 1, 0);
+
+	int muchiiAlese = 0;
+	for (auto muchie : lm)
+	{
+		int nod_start = muchie.v1;
+		int nod_final = muchie.v2;
+		int rad1 = radacina(nod_start, T);
+		int rad2 = radacina(nod_final, T);
+		if (rad1 != rad2)
+		{
+			if (inaltime[rad1] > inaltime[rad2])
+				T[rad2] = rad1;
+			else if (inaltime[rad1] < inaltime[rad2])
+				T[rad1] = rad2;
+			else
+			{
+				T[rad1] = rad2;
+				inaltime[rad2]++;
+			}
+			APM.push_back(muchie);
+		}
+		//else cout << nod_start << " si " << nod_final << " fac parte din arborele cu radacina " << rad1 << endl;
+		if (APM.size() == N - 1) break;
+	}
+	return APM;
+}
+int main()
+{
+	vector <muchie> lista_muchii;
+	vector <muchie> APM;
+	read_file("Text2.txt", lista_muchii);
+	APM = Kruskal_APM(lista_muchii);
+	for (auto x : APM)
+		cout << x.v1 << ' ' << x.v2 << ' ' << x.cost << endl;
+	int cost_total = 0;
+	for (auto x : APM)
+		cost_total += x.cost;
+	cout << endl << "COST TOTAL APM: " << cost_total << endl;
+}
+/*
+11 16
+1 8 7
+2 7 4
+7 1 5
+3 10 5
+4 9 3
+11 4 5
+5 11 5
+10 6 4
+9 2 9
+5 4 4
+6 11 15
+7 8 5
+2 1 3
+9 11 4
+3 6 5
+3 9 2
+*/

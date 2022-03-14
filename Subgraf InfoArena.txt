@@ -1,0 +1,93 @@
+#include <iostream>
+#include <climits>
+#include <fstream>
+#include <list>
+#include <algorithm>
+#include <vector>
+#define NMAX 101
+
+using namespace std;
+
+ifstream fin("subgraf1.in");
+ofstream fout("subgraf1.out");
+
+int N;
+bool mad[NMAX][NMAX];
+
+void read()
+{
+    fin >> N;
+    int x, y;
+    while (fin >> x && fin >> y)
+    {
+        mad[x][y] = mad[y][x] = 1;
+    }
+}
+void getDegrees(vector <int> &degree)
+{
+    degree.push_back(INT_MIN);
+    for (int i = 1; i <= N; i++)
+    {
+        int current_degree = 0;
+        for (int j = 1; j <= N; j++)
+        {
+            if (mad[i][j]) current_degree++;
+        }
+        degree.push_back(current_degree);
+    }
+}
+void deleteMinDegreeNodes(vector <int> &degree)
+{
+    int min_degree = *min_element(degree.begin() +1, degree.end());
+    
+    for (int i = 1; i <= N; i++)
+    {
+        if (degree[i] == min_degree)
+        {
+            for (int j = 1; j <= N; j++) {
+                mad[i][j] = 0;
+                mad[j][i] = 0;
+            }
+        }
+    }
+}
+int countEdges()
+{
+    int res = 0;
+    for (int i = 1; i <= N; i++)
+    {
+        for (int j = i; j <= N; j++)
+        {
+            if (mad[i][j]) res++;
+        }
+    }
+    return res;
+}
+void afisMAD()
+{
+    for (int i = 1; i <= N; i++)
+    {
+        for (int j = 1; j <= N; j++)
+        {
+            cout << mad[i][j] << ' ';
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
+int main()
+{
+    vector<int> degree;
+    read();
+    //afisMAD();
+    getDegrees(degree);
+    
+    /*for (auto x : degree)
+        cout << x << ' ';*/
+    //cout << endl;
+    deleteMinDegreeNodes(degree);
+    //afisMAD();
+    //cout << endl;
+    fout << countEdges();
+}
