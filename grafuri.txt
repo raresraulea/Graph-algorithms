@@ -1,0 +1,158 @@
+package grafuri;
+
+import java.awt.*;
+import java.util.*;
+
+public class graph {
+  int maxVerts=20;
+  int nVerts=0;
+  ArrayList vertexList= new ArrayList();
+  int A[][]=new int [maxVerts][maxVerts];
+  int t;
+
+  public graph() {
+    for(int i=0;i<maxVerts;i++)
+      for(int j=0;j<maxVerts;j++)
+        A[i][j]=0;
+  }
+
+  public void addvertex()
+  {
+    vertexList.add(new vertex(nVerts++));
+  }
+  public void addEdge(int v1,int v2)
+  {
+    A[v1][v2]=1;
+    A[v2][v1]=1;
+  }
+  public void addEdge(int v1,int v2, int p)
+  {
+    A[v1][v2]=A[v2][v1]=p;
+  }
+  public void DFS(graph g)
+  {
+    for(int u=0;u<nVerts;u++)
+         {
+           ((vertex)vertexList.get(u)).color = Color.WHITE;
+           ((vertex)vertexList.get(u)).predecesor=null;
+         }
+
+    t=0;
+
+    for(int u=0;u<nVerts;u++)
+
+           if ( ( (vertex) vertexList.get(u)).color == Color.WHITE)
+             Explorare(((vertex)vertexList.get(u)));
+
+
+  }
+
+  public void Explorare(vertex u)
+  {
+    u.color=Color.GRAY;
+    System.out.println(u.index);
+    u.distance=++t;
+    for(int v=0;v<nVerts;v++)
+      if(A[v][u.index]==1&&((vertex)vertexList.get(v)).color==Color.WHITE)
+      {
+        ((vertex)vertexList.get(v)).predecesor=u;
+         Explorare((vertex)vertexList.get(v));
+      }
+    u.color=Color.BLACK;
+    u.finalized=++t;
+  }
+
+  public void Dijkstra(int s)
+  {
+    for(int u=0;u<nVerts;u++)
+    { ((vertex)vertexList.get(u)).distance = 100;
+     ((vertex)vertexList.get(u)).predecesor = null;
+    }
+   ((vertex)vertexList.get(s)).distance = 0;
+   ArrayList Q = (ArrayList)vertexList.clone();
+
+   while(!Q.isEmpty())
+   { int k=0;
+     int min = 300;
+     for(int i=0; i<Q.size(); i++)
+     {
+       if(((vertex)Q.get(i)).distance < min){
+         min = ( (vertex) Q. get(i)).distance;
+         k = i;
+       }
+     }
+     vertex u = ((vertex)Q.get(k));
+     Q.remove(k);
+
+     for(int v=0; v<nVerts; v++)
+     {
+       if(A[v][u.index] != 0 && ((vertex)vertexList.get(v)).distance>u.distance+A[v][u.index])
+       {
+         ((vertex)vertexList.get(v)).distance = u.distance+A[v][u.index];
+         ((vertex)vertexList.get(v)).predecesor = u;
+       }
+     }
+
+     }
+
+  }
+
+  public static void main(String[] args) {
+    graph graph = new graph();
+    graph.addvertex();
+    graph.addvertex();
+    graph.addvertex();
+    graph.addvertex();
+    graph.addvertex();
+
+
+    graph.addEdge(0, 1);
+   graph.addEdge(0, 4);
+   graph.addEdge(1, 4);
+   graph.addEdge(1, 3);
+   graph.addEdge(2, 3);
+   graph.addEdge(3, 4);
+graph.DFS(graph);
+
+    graph.addEdge(0,1,12);
+   graph.addEdge(0,4,15);
+   graph.addEdge(1,2,26);
+   graph.addEdge(1,3,18);
+   graph.addEdge(1,4,17);
+   graph.addEdge(2,3,29);
+    graph.addEdge(3,4,21);
+
+
+
+    graph.Dijkstra( 0);
+    for(int v=0; v<graph.nVerts; v++)
+      System.out.println(((vertex)graph.vertexList.get(v)).distance+" ");
+  }
+
+}
+
+
+
+
+
+package grafuri;
+
+import java.awt.*;
+
+public class vertex {
+  Color color;
+  vertex predecesor;
+  int distance;
+  int discovered;
+  int finalized;
+  char label;
+  int index;
+  int infinite=100;
+  public vertex(int i) {
+    index=i;
+    color=Color.white;
+    distance=infinite;
+    predecesor=null;
+  }
+
+}
